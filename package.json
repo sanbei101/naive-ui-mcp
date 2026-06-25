@@ -1,0 +1,18 @@
+{
+  "name": "naive-ui-docs",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "自动提取 Naive UI 中文文档",
+  "scripts": {
+    "extract": "tsx scripts/extract-docs.ts",
+    "test": "vitest run",
+    "generate": "pnpm extract && pnpm test"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.1",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}

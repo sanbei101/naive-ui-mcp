@@ -1,0 +1,79 @@
+name: Generate Naive UI Docs
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate-docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Clone naive-ui
+        run: git clone --depth 1 https://github.com/tusen-ai/naive-ui.git naive
+
+      - name: Extract docs
+        run: npx tsx scripts/extract-docs.ts ./naive ./docs-output
+
+      - name: Run tests
+        run: npx vitest run
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Push to doc branch
+        run: |
+          mkdir -p /tmp/doc-branch
+          cp -r docs-output/* /tmp/doc-branch/
+
+          git fetch origin doc || true
+          git checkout doc 2>/dev/null || git checkout --orphan doc
+
+          git rm -rf . 2>/dev/null || true
+
+          cp -r /tmp/doc-branch/* .
+
+          cat > README.md << 'EOF'
+          # Naive UI 中文文档
+
+          本分支包含从 [naive-ui](https://github.com/tusen-ai/naive-ui) 自动提取的中文文档。
+
+          ## 目录结构
+
+          ```
+          <component>/
+          ├── api.md    # API 文档
+          └── demo.md   # 示例代码
+          ```
+
+          ## 更新频率
+
+          每天自动更新（北京时间 10:00）。
+          EOF
+
+          git add -A
+          git commit -m "docs: update $(date +%Y-%m-%d)" --allow-empty
+          git push origin doc --force

@@ -1,0 +1,6 @@
+node_modules/
+naive/
+docs-output/
+dist/
+*.log
+.DS_Store
