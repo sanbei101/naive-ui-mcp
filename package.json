@@ -7,7 +7,8 @@
   "scripts": {
     "extract": "tsx scripts/extract-docs.ts",
     "test": "vitest run",
-    "generate": "pnpm extract && pnpm test"
+    "generate": "pnpm extract && pnpm test",
+    "build": "rolldown -c rolldown.config.ts"
   },
   "devDependencies": {
     "@types/node": "^26.0.0",

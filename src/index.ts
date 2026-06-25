@@ -15,6 +15,11 @@ interface Example {
   code: string;
 }
 
+interface ApiSection {
+  title: string;
+  content: string;
+}
+
 /**
  * 获取所有组件目录名
  */
@@ -86,6 +91,44 @@ function parseDemoMd(content: string): Example[] {
   return examples;
 }
 
+/**
+ * 解析 api.md,提取 API 文档
+ */
+function parseApiMd(content: string): ApiSection[] {
+  const sections: ApiSection[] = [];
+  const lines = content.split("\n");
+
+  let currentTitle = "";
+  let currentContent = "";
+
+  function flush() {
+    if (currentTitle) {
+      sections.push({
+        title: currentTitle,
+        content: currentContent.trim(),
+      });
+    }
+  }
+
+  for (const line of lines) {
+    if (line.startsWith("### ")) {
+      flush();
+      currentTitle = line.replace(/^###\s*/, "").trim();
+      currentContent = "";
+      continue;
+    }
+
+    if (line.startsWith("# ") || line.startsWith("## ")) continue;
+
+    if (currentTitle) {
+      currentContent += line + "\n";
+    }
+  }
+
+  flush();
+  return sections;
+}
+
 // ─── MCP 服务器 ───────────────────────────────────────────
 const server = new McpServer({
   name: "naive-ui-docs",
@@ -115,7 +158,7 @@ server.registerTool(
 server.registerTool(
   "list_examples",
   {
-    description: "列出指定组件的所有示例,按二级标题分组返回标题、说明和代码",
+    description: "列出指定组件的所有示例标题和说明,不包含代码。如需获取具体示例代码,请使用 get_example",
     inputSchema: {
       component: z.string().check(z.describe("组件名称:如 button,input,select")),
     },
@@ -151,11 +194,121 @@ server.registerTool(
     const content = fs.readFileSync(demoPath, "utf-8");
     const examples = parseDemoMd(content);
 
+    // 只返回标题和描述,不返回代码
+    const examplesWithoutCode = examples.map(({ title, description }) => ({
+      title,
+      description,
+    }));
+
     return {
       content: [
         {
           type: "text" as const,
-          text: JSON.stringify({ component, total: examples.length, examples }, null, 2),
+          text: JSON.stringify({ component, total: examplesWithoutCode.length, examples: examplesWithoutCode }, null, 2),
+        },
+      ],
+    };
+  },
+);
+
+// Tool: 获取指定示例的代码
+server.registerTool(
+  "get_example",
+  {
+    description: "获取指定组件的某个示例的完整代码",
+    inputSchema: {
+      component: z.string().check(z.describe("组件名称:如 button,input,select")),
+      title: z.string().check(z.describe("示例标题:如 基础用法,尺寸,自定义渲染")),
+    },
+  },
+  async ({ component, title }) => {
+    const demoPath = path.join(REFERENCES_DIR, component, "demo.md");
+    const apiPath = path.join(REFERENCES_DIR, component, "api.md");
+
+    if (!fs.existsSync(apiPath)) {
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `错误:组件 "${component}" 不存在`,
+          },
+        ],
+        isError: true,
+      };
+    }
+
+    if (!fs.existsSync(demoPath)) {
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `错误:组件 "${component}" 没有 demo.md 文件`,
+          },
+        ],
+        isError: true,
+      };
+    }
+
+    const content = fs.readFileSync(demoPath, "utf-8");
+    const examples = parseDemoMd(content);
+
+    const example = examples.find((e) => e.title === title);
+
+    if (!example) {
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `错误:组件 "${component}" 中没有找到标题为 "${title}" 的示例`,
+          },
+        ],
+        isError: true,
+      };
+    }
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: JSON.stringify({ component, example }, null, 2),
+        },
+      ],
+    };
+  },
+);
+
+// Tool: 获取组件的 API 文档
+server.registerTool(
+  "get_api",
+  {
+    description: "获取指定组件的 API 文档,包括 Props,Slots,Events 等",
+    inputSchema: {
+      component: z.string().check(z.describe("组件名称:如 button,input,select")),
+    },
+  },
+  async ({ component }) => {
+    const apiPath = path.join(REFERENCES_DIR, component, "api.md");
+
+    if (!fs.existsSync(apiPath)) {
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `错误:组件 "${component}" 不存在`,
+          },
+        ],
+        isError: true,
+      };
+    }
+
+    const content = fs.readFileSync(apiPath, "utf-8");
+    const sections = parseApiMd(content);
+
+    return {
+      content: [
+        {
+          type: "text" as const,
+          text: JSON.stringify({ component, total: sections.length, sections }, null, 2),
         },
       ],
     };
