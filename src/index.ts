@@ -158,7 +158,8 @@ server.registerTool(
 server.registerTool(
   "list_examples",
   {
-    description: "列出指定组件的所有示例标题和说明,不包含代码。如需获取具体示例代码,请使用 get_example",
+    description:
+      "列出指定组件的所有示例标题和说明,不包含代码。如需获取具体示例代码,请使用 get_example",
     inputSchema: {
       component: z.string().check(z.describe("组件名称:如 button,input,select")),
     },
@@ -194,17 +195,21 @@ server.registerTool(
     const content = fs.readFileSync(demoPath, "utf-8");
     const examples = parseDemoMd(content);
 
-    // 只返回标题和描述,不返回代码
-    const examplesWithoutCode = examples.map(({ title, description }) => ({
-      title,
-      description,
-    }));
+    // 返回 Markdown 格式,更易读
+    let markdown = `# ${component} 示例列表\n\n`;
+    examples.forEach(({ title, description }, index) => {
+      markdown += `${index + 1}. **${title}**`;
+      if (description) {
+        markdown += `\n   ${description}`;
+      }
+      markdown += `\n`;
+    });
 
     return {
       content: [
         {
           type: "text" as const,
-          text: JSON.stringify({ component, total: examplesWithoutCode.length, examples: examplesWithoutCode }, null, 2),
+          text: markdown,
         },
       ],
     };
@@ -215,10 +220,10 @@ server.registerTool(
 server.registerTool(
   "get_example",
   {
-    description: "获取指定组件的某个示例的完整代码",
+    description: "获取指定组件的某个示例的完整代码,支持模糊匹配标题",
     inputSchema: {
       component: z.string().check(z.describe("组件名称:如 button,input,select")),
-      title: z.string().check(z.describe("示例标题:如 基础用法,尺寸,自定义渲染")),
+      title: z.string().check(z.describe("示例标题:如 基础,尺寸,自定义渲染")),
     },
   },
   async ({ component, title }) => {
@@ -252,25 +257,40 @@ server.registerTool(
     const content = fs.readFileSync(demoPath, "utf-8");
     const examples = parseDemoMd(content);
 
-    const example = examples.find((e) => e.title === title);
+    // 先精确匹配,再模糊匹配
+    let example = examples.find((e) => e.title === title);
 
     if (!example) {
+      // 模糊匹配:标题包含输入的关键词
+      example = examples.find((e) => e.title.includes(title));
+    }
+
+    if (!example) {
+      // 列出所有可用的示例标题
+      const availableTitles = examples.map((e) => e.title).join(", ");
       return {
         content: [
           {
             type: "text" as const,
-            text: `错误:组件 "${component}" 中没有找到标题为 "${title}" 的示例`,
+            text: `错误:组件 "${component}" 中没有找到标题为 "${title}" 的示例\n\n可用的示例标题:\n${availableTitles}`,
           },
         ],
         isError: true,
       };
     }
 
+    // 返回 Markdown 格式,代码直接展示
+    let markdown = `# ${component} - ${example.title}\n\n`;
+    if (example.description) {
+      markdown += `${example.description}\n\n`;
+    }
+    markdown += `\`\`\`vue\n${example.code}\n\`\`\``;
+
     return {
       content: [
         {
           type: "text" as const,
-          text: JSON.stringify({ component, example }, null, 2),
+          text: markdown,
         },
       ],
     };
@@ -304,11 +324,16 @@ server.registerTool(
     const content = fs.readFileSync(apiPath, "utf-8");
     const sections = parseApiMd(content);
 
+    let markdown = `# ${component} API 文档\n\n`;
+    for (const section of sections) {
+      markdown += `## ${section.title}\n\n${section.content}\n\n`;
+    }
+
     return {
       content: [
         {
           type: "text" as const,
-          text: JSON.stringify({ component, total: sections.length, sections }, null, 2),
+          text: markdown,
         },
       ],
     };
