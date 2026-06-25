@@ -65,4 +65,4 @@ jobs:
           publish_dir: ./docs-output
           publish_branch: doc
           force_orphan: true
-          enable_jekyll: false
+          enable_jekyll: true
