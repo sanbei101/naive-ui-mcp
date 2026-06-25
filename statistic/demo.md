@@ -1,0 +1,32 @@
+# 统计数据 Statistic - 演示示例
+
+## 基础用法
+
+```vue
+<script lang="ts" setup>
+import { MdSave } from '@vicons/ionicons4'
+</script>
+
+<template>
+  <n-row>
+    <n-col :span="12">
+      <n-statistic label="统计数据" :value="99">
+        <template #prefix>
+          <n-icon>
+            <MdSave />
+          </n-icon>
+        </template>
+        <template #suffix>
+          / 100
+        </template>
+      </n-statistic>
+    </n-col>
+    <n-col :span="12">
+      <n-statistic label="活跃用户">
+        1,234,123
+      </n-statistic>
+    </n-col>
+  </n-row>
+</template>
+```
+
