@@ -1,14 +1,19 @@
 {
   "name": "naive-ui-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "type": "module",
   "description": "naive-ui的mcp服务",
+  "main": "./dist/index.js",
+  "bin": {
+    "naive-ui-mcp": "./dist/index.js"
+  },
   "scripts": {
     "extract": "tsx scripts/extract-docs.ts",
     "test": "vitest run",
     "generate": "pnpm extract && pnpm test",
-    "build": "rolldown -c rolldown.config.ts"
+    "build": "rolldown -c rolldown.config.ts",
+    "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
     "@types/node": "^26.0.0",
