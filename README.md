@@ -33,13 +33,13 @@ npm install -g naive-ui-mcp
 pnpm add -g naive-ui-mcp
 ```
 
-### 配置`Claude Code
+### 配置`Claude Code`
 
 ```
 claude mcp add navie-ui-mcp -- npx -y naive-ui-mcp
 ```
 
-### 配置 Cursor / VS Code
+### 配置 `Cursor` / `VS Code`
 
 在 `.cursor/mcp.json` 或 VS Code settings 中:
 
@@ -67,11 +67,11 @@ AI 会自动调用 MCP 工具查阅文档并生成准确的代码。
 
 ## 📦 技术栈
 
-- **运行时**: Node.js
+- **运行时**: `Node.js`
 - **构建工具**: [Rolldown](https://rolldown.rs/)
 - **MCP SDK**: `@modelcontextprotocol/sdk`
-- **Schema 验证**: Zod
-- **测试**: Vitest
+- **Schema 验证**: `Zod`
+- **测试**: `Vitest`
 
 ## 🛠 开发
 
