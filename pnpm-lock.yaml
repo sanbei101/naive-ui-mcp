@@ -782,8 +782,8 @@ packages:
     resolution: {integrity: sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==}
     engines: {node: '>= 0.4'}
 
-  hono@4.12.32:
-    resolution: {integrity: sha512-XcuyW9qE2kJn07PkecMOBd5Vq/hMy7mmGw+idz1yblbg9N17ijJODrvPkn7/dwL3Kulj8LcRJ69DLOWf91dRUg==}
+  hono@4.13.12:
+    resolution: {integrity: sha512-6E2QDAc9Ick9Sq77ZrGS/dk2WUYni91aufTw6LJKpV7w8kW5/GxVUc650FOADOmlwg3K+f7Pun6XlV+pYmW6gw==}
     engines: {node: '>=16.9.0'}
 
   http-errors@2.0.1:
@@ -1302,9 +1302,9 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@hono/node-server@2.0.12(hono@4.12.32)':
+  '@hono/node-server@2.0.12(hono@4.13.12)':
     dependencies:
-      hono: 4.12.32
+      hono: 4.13.12
 
   '@jridgewell/resolve-uri@3.1.2': {}
 
@@ -1317,7 +1317,7 @@ snapshots:
 
   '@modelcontextprotocol/sdk@1.31.0(zod@4.6.5)':
     dependencies:
-      '@hono/node-server': 2.0.12(hono@4.12.32)
+      '@hono/node-server': 2.0.12(hono@4.13.12)
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       content-type: 1.0.5
@@ -1327,7 +1327,7 @@ snapshots:
       eventsource-parser: 3.1.0
       express: 5.2.1
       express-rate-limit: 8.6.1(express@5.2.1)
-      hono: 4.12.32
+      hono: 4.13.12
       jose: 6.2.4
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -1768,7 +1768,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.12.32: {}
+  hono@4.13.12: {}
 
   http-errors@2.0.1:
     dependencies:
